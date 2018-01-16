@@ -21,13 +21,15 @@ A local dokerized service for icd9 codes
 
 6. Run queries like
 
-  `http://localhost/chapters`
-  `http://localhost/chapters/1`
-  `http://localhost/chapters/1/subchapters`
-  `http://localhost/chapters/1/diseases`
-  `http://localhost/subchapters`
-  `http://localhost/subchapters/1/diseases`
-  `http://localhost/subchapters/1/diseases?_page=1&_limit=20`
-  `http://localhost/diseases?q=reflux`
+```
+  http://localhost/chapters
+  http://localhost/chapters/1
+  http://localhost/chapters/1/subchapters
+  http://localhost/chapters/1/diseases
+  http://localhost/subchapters
+  http://localhost/subchapters/1/diseases
+  http://localhost/subchapters/1/diseases?_page=1&_limit=20
+  http://localhost/diseases?q=reflux
+```
 
-  `http://localhost/chapters/1/subchapters/2` <= not working! [too deepness for json-server](https://github.com/typicode/json-server/issues/72)
+`http://localhost/chapters/1/subchapters/2` <= not working! [too deepness for json-server](https://github.com/typicode/json-server/issues/72)
