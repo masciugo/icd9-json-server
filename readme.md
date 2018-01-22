@@ -38,7 +38,7 @@ A local dokerized service for icd9 codes
 
 ```
 heroku container:login
-heroku create icd9-json-server # create the app ifbnecessary
+heroku create icd9-json-server # create the app if necessary
 heroku container:push web -a icd9-json-server
 logs -tail -a icd9-json-server
 ```
