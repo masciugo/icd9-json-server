@@ -18,8 +18,6 @@ data = {
 }
 csc = cc = nil
 csc_counter = 0
-chapter_array = []
-subchapter_array = []
 row_n = 0
 
 begin
@@ -32,11 +30,10 @@ begin
       csc_counter = 0
       cc = OpenStruct.new(row.match(CHAPTER_RE).named_captures)
       cc.name.strip!
-      cc.from = cc.from.to_i
-      cc.to = (cc.to || cc.from).to_i
-      data['chapters'] << cc.to_h
-      (cc.from..cc.to).step(1).each{|i| chapter_array[i] = cc}
-      # puts cc.to_h
+      cc.from = cc.from
+      cc.to = (cc.to || cc.from)
+      data['chapters'] << cc
+      # puts cc
       next
     when CHAPTER_VE_RE
       csc = nil
@@ -44,11 +41,10 @@ begin
       cc = OpenStruct.new(row.match(CHAPTER_VE_RE).named_captures)
       cc.name.strip!
       cc.id = data['chapters'].size + 1
-      cc.from = cc.from.to_i
-      cc.to = (cc.to || cc.from).to_i
-      data['chapters'] << cc.to_h
-      (cc.from..cc.to).step(1).each{|i| chapter_array[i] = cc}
-       # puts cc.to_h
+      cc.from = cc.from
+      cc.to = (cc.to || cc.from)
+      data['chapters'] << cc
+       # puts cc
       # puts row
       next
     when SUBCHAPTER_RE
@@ -57,12 +53,10 @@ begin
       csc = OpenStruct.new(row.match(SUBCHAPTER_RE).named_captures)
       csc.name.strip!
       csc.id = "#{cc.id}-#{csc_counter}"
-      csc.from = csc.from.to_i
-      csc.to = (csc.to || csc.from).to_i
+      csc.to ||= csc.from
       csc.chapterId = cc.id
-      data['subchapters'] << csc.to_h
-      (csc.from..csc.to).step(1).each{|i| subchapter_array[i] = csc}
-       # puts csc.to_h
+      data['subchapters'] << csc
+       # puts csc
       # puts row
       next
     else
@@ -77,18 +71,21 @@ begin
   File.readlines(file_icd9_cm, :encoding => 'iso-8859-1').each do |row|
     row.strip!
     cd = OpenStruct.new(row.match(DESEASE_RE).named_captures)
-    cd.id.insert(3,'.')
-    area_id = cd.id.split('.').first.to_i
-    c = chapter_array[area_id]
-    sc = subchapter_array[area_id]
+    area_id = cd.id[0..(cd.id.start_with?('E') ? 3 : 2)]
+    c = data['chapters'].find{|c| area_id.between?(c.from,c.to)}
     cd.chapterId = c.id
+    sc = data['subchapters'].find{|sc| area_id.between?(sc.from,sc.to)}
     cd.subchapterId = sc.id if sc
     cd.longName = [c, sc, cd].compact.map(&:name).join(' | ')
-    data['diseases'] << cd.to_h
+    data['diseases'] << cd
   end
 rescue RuntimeError => e
   fail(e)
 end
+
+data['chapters'].map!(&:to_h)
+data['subchapters'].map!(&:to_h)
+data['diseases'].map!(&:to_h)
 
 File.open("data.json", "w") {|f| f.write(data.to_json) }
 
