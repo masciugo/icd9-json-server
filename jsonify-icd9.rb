@@ -18,8 +18,8 @@ data = {
 }
 csc = cc = nil
 csc_counter = 0
-chapter_index = []
-subchapter_index = []
+chapter_array = []
+subchapter_array = []
 row_n = 0
 
 begin
@@ -35,7 +35,7 @@ begin
       cc.from = cc.from.to_i
       cc.to = (cc.to || cc.from).to_i
       data['chapters'] << cc.to_h
-      (cc.from..cc.to).step(1).each{|i| chapter_index[i] = cc.id}
+      (cc.from..cc.to).step(1).each{|i| chapter_array[i] = cc}
       # puts cc.to_h
       next
     when CHAPTER_VE_RE
@@ -47,7 +47,7 @@ begin
       cc.from = cc.from.to_i
       cc.to = (cc.to || cc.from).to_i
       data['chapters'] << cc.to_h
-      (cc.from..cc.to).step(1).each{|i| chapter_index[i] = cc.id}
+      (cc.from..cc.to).step(1).each{|i| chapter_array[i] = cc}
        # puts cc.to_h
       # puts row
       next
@@ -61,7 +61,7 @@ begin
       csc.to = (csc.to || csc.from).to_i
       csc.chapterId = cc.id
       data['subchapters'] << csc.to_h
-      (csc.from..csc.to).step(1).each{|i| subchapter_index[i] = csc.id}
+      (csc.from..csc.to).step(1).each{|i| subchapter_array[i] = csc}
        # puts csc.to_h
       # puts row
       next
@@ -76,12 +76,15 @@ end
 begin
   File.readlines(file_icd9_cm, :encoding => 'iso-8859-1').each do |row|
     row.strip!
-    current_disease = OpenStruct.new(row.match(DESEASE_RE).named_captures)
-    current_disease.id.insert(3,'.')
-    area_id = current_disease.id.split('.').first.to_i
-    current_disease.chapterId = chapter_index[area_id]
-    current_disease.subchapterId = subchapter_index[area_id]
-    data['diseases'] << current_disease.to_h
+    cd = OpenStruct.new(row.match(DESEASE_RE).named_captures)
+    cd.id.insert(3,'.')
+    area_id = cd.id.split('.').first.to_i
+    c = chapter_array[area_id]
+    sc = subchapter_array[area_id]
+    cd.chapterId = c.id
+    cd.subchapterId = sc.id if sc
+    cd.longName = [c, sc, cd].compact.map(&:name).join(' | ')
+    data['diseases'] << cd.to_h
   end
 rescue RuntimeError => e
   fail(e)
