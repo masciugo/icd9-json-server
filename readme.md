@@ -42,4 +42,4 @@ heroku create icd9-json-server # create the app if necessary
 heroku container:push web -a icd9-json-server
 logs -tail -a icd9-json-server
 ```
-[go live](icd9-json-server.herokuapp.com)
+[go live](https://icd9-json-server.herokuapp.com/)
